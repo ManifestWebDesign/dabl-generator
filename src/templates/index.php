@@ -1,3 +1,8 @@
+<?php
+
+use Dabl\Generator\StringFormat;
+
+?>
 <h1>
 	<a href="<?php echo "<?php echo site_url('" . $plural_url . "/edit') ?>" ?>"
 	   class="button"

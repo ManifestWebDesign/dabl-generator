@@ -1,4 +1,8 @@
 <?php
+
+use Dabl\Generator\StringFormat;
+use Dabl\Orm\Model;
+
 unset($actions['Show']);
 ?>
 <h1>View <?php echo StringFormat::titleCase($table_name, ' ') ?></h1>

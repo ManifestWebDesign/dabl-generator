@@ -1,5 +1,7 @@
 <?php echo "<?php\n"; ?>
 
+use Dabl\Query\QueryPager;
+
 class <?php echo $controller_name ?> extends ApplicationController {
 
 	/**

@@ -1,4 +1,9 @@
-<?php echo '<?php' ?>
+<?php
+
+use Dabl\Generator\StringFormat;
+
+echo '<?php';
+?>
 
 $_get_args = (array) @$_GET;
 

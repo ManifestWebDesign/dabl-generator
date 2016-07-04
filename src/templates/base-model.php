@@ -1,5 +1,8 @@
 <?php
 
+use Dabl\Generator\StringFormat;
+use Dabl\Orm\Model;
+
 $used_methods = array(
 	'getTableName',
 	'getColumnNames',
@@ -31,6 +34,11 @@ $used_methods = array(
 echo '<?php';
 ?>
 
+
+use Dabl\Orm\Model;
+use Dabl\Query\DBManager;
+use Dabl\Query\Query;
+
 /**
  *		Created by Dan Blaisdell's DABL
  *		Do not alter base files, as they will be overwritten.
@@ -38,10 +46,10 @@ echo '<?php';
  *		the 'models' folder.
  *
  */
-abstract class base<?php echo $class_name ?> extends ApplicationModel {
+abstract class base<?php echo $model_name ?> extends <?php echo $options['base_model_parent_class'] ?> {
 
-<?php foreach ($fields as $key => $field): ?>
-	const <?php echo StringFormat::constant($field->getName()) ?> = '<?php echo $table_name ?>.<?php echo $field->getName() ?>';
+<?php foreach ($columns as $key => &$column): ?>
+	const <?php echo StringFormat::constant($column->getName()) ?> = '<?php echo $table_name ?>.<?php echo $column->getName() ?>';
 <?php endforeach ?>
 
 	/**
@@ -52,7 +60,7 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 
 	/**
 	 * Cache of objects retrieved from the database
-	 * @var <?php echo $class_name ?>[]
+	 * @var <?php echo $model_name ?>[]
 	 */
 	protected static $_instancePool = array();
 
@@ -75,8 +83,8 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 	 * @var string[]
 	 */
 	protected static $_primaryKeys = array(
-<?php if ($PKs): ?>
-<?php foreach ($PKs as &$the_pk): ?>
+<?php if ($primary_keys): ?>
+<?php foreach ($primary_keys as &$the_pk): ?>
 		'<?php echo $the_pk ?>',
 <?php endforeach ?>
 <?php endif ?>
@@ -86,7 +94,7 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 	 * string name of the primary key column
 	 * @var string
 	 */
-	protected static $_primaryKey = '<?php echo $PK ?>';
+	protected static $_primaryKey = '<?php echo $pk ?>';
 
 	/**
 	 * true if primary key is an auto-increment column
@@ -99,8 +107,8 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 	 * @var string[]
 	 */
 	protected static $_columns = array(
-<?php foreach ($fields as $key => $field): ?>
-		<?php echo $class_name ?>::<?php echo StringFormat::constant($field->getName()) ?>,
+<?php foreach ($columns as $key => &$column): ?>
+		<?php echo $model_name ?>::<?php echo StringFormat::constant($column->getName()) ?>,
 <?php endforeach ?>
 	);
 
@@ -109,8 +117,8 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 	 * @var string[]
 	 */
 	protected static $_columnNames = array(
-<?php foreach ($fields as $key => $field): ?>
-		'<?php echo $field->getName() ?>',
+<?php foreach ($columns as $key => &$column): ?>
+		'<?php echo $column->getName() ?>',
 <?php endforeach ?>
 	);
 
@@ -119,32 +127,32 @@ abstract class base<?php echo $class_name ?> extends ApplicationModel {
 	 * @var string[]
 	 */
 	protected static $_columnTypes = array(
-<?php foreach ($fields as $key => $field): ?>
-		'<?php echo $field->getName() ?>' => Model::COLUMN_TYPE_<?php echo $field->getType() ?>,
+<?php foreach ($columns as $key => &$column): ?>
+		'<?php echo $column->getName() ?>' => Model::COLUMN_TYPE_<?php echo $column->getType() ?>,
 <?php endforeach ?>
 	);
 
 <?php
-foreach ($fields as $key => $field) {
-	$default = $field->getDefaultValue() ? $field->getDefaultValue()->getValue() : null;
+foreach ($columns as $key => &$column) {
+	$default = $column->getDefaultValue() ? $column->getDefaultValue()->getValue() : null;
 	// fix for MSSQL default value weirdness
-	if ($field->isNumericType()) {
+	if ($column->isNumericType()) {
 		$default = trim($default, '()');
 	}
 ?>
 	/**
-	 * <?php echo $conn->quoteIdentifier($field->getName(), true) ?> <?php echo $field->getType() ?>
-<?php if ($field->isNotNull()): ?> NOT NULL<?php endif ?>
+	 * <?php echo $conn->quoteIdentifier($column->getName(), true) ?> <?php echo $column->getType() ?>
+<?php if ($column->isNotNull()): ?> NOT NULL<?php endif ?>
 <?php if (null !== $default): ?> DEFAULT <?php echo ctype_digit($default) ? $default : $conn->quote($default) ?><?php endif ?>
 
-	 * @var <?php echo $field->getPhpType() ?>
+	 * @var <?php echo $column->getPhpType() ?>
 
 	 */
 <?php
-	if (($field->isNumericType()) && (!ctype_digit($default)) && (!$default)) $default = null;
+	if (($column->isNumericType()) && (!ctype_digit($default)) && (!$default)) $default = null;
 ?>
-	protected $<?php echo $field->getName() ?><?php
-if ($field->isNumericType() && $default !== null)
+	protected $<?php echo $column->getName() ?><?php
+if ($column->isNumericType() && $default !== null)
 	echo ' = ' . $default;
 elseif ($default !== null && strtolower($default) !== 'null')
 	echo " = '" . addslashes($default) . "'"
@@ -154,13 +162,13 @@ elseif ($default !== null && strtolower($default) !== 'null')
 }
 
 // GETTERS AND SETTERS
-foreach ($fields as $key => $field):
-	$default = $field->getDefaultValue() ? $field->getDefaultValue()->getValue() : null;
-	$method_name = StringFormat::titleCase($field->getName());
+foreach ($columns as $key => &$column):
+	$default = $column->getDefaultValue() ? $column->getDefaultValue()->getValue() : null;
+	$method_name = StringFormat::titleCase($column->getName());
 	$params = '';
 	$param_vars = '';
-	if ($field->isTemporalType()) {
-		if ($field->getType() === Model::COLUMN_TYPE_INTEGER_TIMESTAMP) {
+	if ($column->isTemporalType()) {
+		if ($column->getType() === Model::COLUMN_TYPE_INTEGER_TIMESTAMP) {
 			$params = '$format = \'' . $conn->getTimeStampFormatter() . '\'';
 		} else {
 			$params = '$format = null';
@@ -168,47 +176,47 @@ foreach ($fields as $key => $field):
 		$param_vars = '$format';
 	}
 	$used_methods[] = "get$method_name";
-	$raw_method_name = ucfirst($field->getName());
+	$raw_method_name = ucfirst($column->getName());
 ?>
 	/**
-	 * Gets the value of the <?php echo $field->getName() ?> field
+	 * Gets the value of the <?php echo $column->getName() ?> field
 	 */
 	function get<?php echo $method_name ?>(<?php echo $params ?>) {
-<?php if ($field->isTemporalType()): ?>
-		if (null === $this-><?php echo $field->getName() ?> || null === $format) {
-			return $this-><?php echo $field->getName() ?>;
+<?php if ($column->isTemporalType()): ?>
+		if (null === $this-><?php echo $column->getName() ?> || null === $format) {
+			return $this-><?php echo $column->getName() ?>;
 		}
-<?php if ($field->getType() === Model::COLUMN_TYPE_INTEGER_TIMESTAMP): ?>
-		return date($format, $this-><?php echo $field->getName() ?>);
+<?php if ($column->getType() === Model::COLUMN_TYPE_INTEGER_TIMESTAMP): ?>
+		return date($format, $this-><?php echo $column->getName() ?>);
 <?php else: ?>
-		if (0 === strpos($this-><?php echo $field->getName() ?>, '0000-00-00')) {
+		if (0 === strpos($this-><?php echo $column->getName() ?>, '0000-00-00')) {
 			return null;
 		}
-		return date($format, strtotime($this-><?php echo $field->getName() ?>));
+		return date($format, strtotime($this-><?php echo $column->getName() ?>));
 <?php endif ?>
 <?php else: ?>
-		return $this-><?php echo $field->getName() ?>;
+		return $this-><?php echo $column->getName() ?>;
 <?php endif ?>
 	}
 
 <?php $used_methods[] = "set$method_name"; ?>
 	/**
-	 * Sets the value of the <?php echo $field->getName() ?> field
-	 * @return <?php echo $class_name ?>
+	 * Sets the value of the <?php echo $column->getName() ?> field
+	 * @return <?php echo $model_name ?>
 
 	 */
 	function set<?php echo $method_name ?>($value) {
-		return $this->setColumnValue('<?php echo $field->getName() ?>', $value, Model::COLUMN_TYPE_<?php echo $field->getType() ?>);
+		return $this->setColumnValue('<?php echo $column->getName() ?>', $value, Model::COLUMN_TYPE_<?php echo $column->getType() ?>);
 	}
 
 <?php if (strtolower($raw_method_name) != strtolower($method_name)): ?>
 <?php $used_methods[] = "get$raw_method_name"; ?>
 	/**
-	 * Convenience function for <?php echo $class_name ?>::get<?php echo $method_name ?>
+	 * Convenience function for <?php echo $model_name ?>::get<?php echo $method_name ?>
 
 	 * final because get<?php echo $method_name ?> should be extended instead
 	 * to ensure consistent behavior
-	 * @see <?php echo $class_name ?>::get<?php echo $method_name ?>
+	 * @see <?php echo $model_name ?>::get<?php echo $method_name ?>
 
 	 */
 	final function get<?php echo $raw_method_name ?>(<?php echo $params ?>) {
@@ -217,13 +225,13 @@ foreach ($fields as $key => $field):
 
 <?php $used_methods[] = "set$raw_method_name"; ?>
 	/**
-	 * Convenience function for <?php echo $class_name ?>::set<?php echo $method_name ?>
+	 * Convenience function for <?php echo $model_name ?>::set<?php echo $method_name ?>
 
 	 * final because set<?php echo $method_name ?> should be extended instead
 	 * to ensure consistent behavior
-	 * @see <?php echo $class_name ?>::set<?php echo $method_name ?>
+	 * @see <?php echo $model_name ?>::set<?php echo $method_name ?>
 
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 	final function set<?php echo $raw_method_name ?>($value) {
@@ -243,45 +251,45 @@ foreach ($fields as $key => $field):
 	/**
 	 * Searches the database for a row with the ID(primary key) that matches
 	 * the one input.
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 <?php $used_methods[] = 'retrieveByPK'; ?>
-	 static function retrieveByPK(<?php if ($PKs && count($PKs) == 1): ?>$<?php echo StringFormat::variable($PKs[0]) ?><?php else: ?>$the_pk<?php endif ?>) {
-<?php if (count($PKs) > 1): ?>
+	 static function retrieveByPK(<?php if ($primary_keys && count($primary_keys) == 1): ?>$<?php echo StringFormat::variable($primary_keys[0]) ?><?php else: ?>$the_pk<?php endif ?>) {
+<?php if (count($primary_keys) > 1): ?>
 		throw new Exception('This table has more than one primary key.  Use retrieveByPKs() instead.');
 <?php else: ?>
-		return static::retrieveByPKs(<?php if ($PKs && count($PKs) == 1): ?>$<?php echo StringFormat::variable($PKs[0]) ?><?php else: ?>$the_pk<?php endif ?>);
+		return static::retrieveByPKs(<?php if ($primary_keys && count($primary_keys) == 1): ?>$<?php echo StringFormat::variable($primary_keys[0]) ?><?php else: ?>$the_pk<?php endif ?>);
 <?php endif ?>
 	}
 
 	/**
 	 * Searches the database for a row with the primary keys that match
 	 * the ones input.
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 <?php $used_methods[] = 'retrieveByPKs'; ?>
-	static function retrieveByPKs(<?php foreach ($PKs as $k => &$v): ?><?php if ($k > 0): ?>, <?php endif ?>$<?php echo StringFormat::variable($v) ?><?php endforeach ?>) {
-<?php if (0 === count($PKs)): ?>
+	static function retrieveByPKs(<?php foreach ($primary_keys as $k => &$v): ?><?php if ($k > 0): ?>, <?php endif ?>$<?php echo StringFormat::variable($v) ?><?php endforeach ?>) {
+<?php if (0 === count($primary_keys)): ?>
 		throw new Exception('This table does not have any primary keys.');
 <?php else: ?>
-<?php foreach ($PKs as $k => &$v): ?>
+<?php foreach ($primary_keys as $k => &$v): ?>
 		if (null === $<?php echo StringFormat::variable($v) ?>) {
 			return null;
 		}
 <?php endforeach ?>
-<?php if (1 !== count($PKs)): ?>
+<?php if (1 !== count($primary_keys)): ?>
 		$args = func_get_args();
 <?php endif; ?>
 		if (static::$_poolEnabled) {
-			$pool_instance = static::retrieveFromPool(<?php if (1 == count($PKs)): ?>$<?php echo StringFormat::variable($PK) ?><?php else: ?>implode('-', $args)<?php endif ?>);
+			$pool_instance = static::retrieveFromPool(<?php if (1 == count($primary_keys)): ?>$<?php echo StringFormat::variable($pk) ?><?php else: ?>implode('-', $args)<?php endif ?>);
 			if (null !== $pool_instance) {
 				return $pool_instance;
 			}
 		}
 		$q = new Query;
-<?php foreach ($PKs as $k => &$v): ?>
+<?php foreach ($primary_keys as $k => &$v): ?>
 		$q->add('<?php echo $v ?>', $<?php echo StringFormat::variable($v) ?>);
 <?php endforeach ?>
 		return static::doSelectOne($q);
@@ -289,24 +297,24 @@ foreach ($fields as $key => $field):
 	}
 
 <?php
-	foreach ($this->getColumns($table_name) as $field) {
+	foreach ($this->getColumns($table_name) as $column) {
 ?>
 	/**
-	 * Searches the database for a row with a <?php echo $field->getName() ?>
+	 * Searches the database for a row with a <?php echo $column->getName() ?>
 
 	 * value that matches the one provided
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
-	static function retrieveBy<?php echo StringFormat::titleCase($field->getName()) ?>($value) {
+	static function retrieveBy<?php echo StringFormat::titleCase($column->getName()) ?>($value) {
 <?php
-		if ($field->isPrimaryKey() && count($field->getTable()->getPrimaryKey()) === 1) {
+		if ($column->isPrimaryKey() && count($column->getTable()->getPrimaryKey()) === 1) {
 ?>
-		return <?php echo $class_name?>::retrieveByPK($value);
+		return <?php echo $model_name?>::retrieveByPK($value);
 <?php
 		} else {
 ?>
-		return static::retrieveByColumn('<?php echo $field->getName() ?>', $value);
+		return static::retrieveByColumn('<?php echo $column->getName() ?>', $value);
 <?php
 		}
 ?>
@@ -318,13 +326,13 @@ foreach ($fields as $key => $field):
 
 	/**
 	 * Casts values of int fields to (int)
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 	function castInts() {
-<?php foreach ($fields as $key => $field): ?>
-<?php if (Model::isIntegerType($field->getType())): ?>
-		$this-><?php echo $field->getName() ?> = (null === $this-><?php echo $field->getName() ?>) ? null : (int) $this-><?php echo $field->getName() ?>;
+<?php foreach ($columns as $key => &$column): ?>
+<?php if (Model::isIntegerType($column->getType())): ?>
+		$this-><?php echo $column->getName() ?> = (null === $this-><?php echo $column->getName() ?>) ? null : (int) $this-><?php echo $column->getName() ?>;
 <?php endif ?>
 <?php endforeach ?>
 		return $this;
@@ -371,8 +379,8 @@ foreach ($this->getForeignKeysFromTable($table_name) as $r):
 	if (false !== $id_pos) {
 		$from_column_clean = substr($from_column, 0, $id_pos);
 		$is_field = false;
-		foreach ($fields as $field) {
-			if ($field->getName() == $from_column_clean) {
+		foreach ($columns as $column) {
+			if ($column->getName() == $from_column_clean) {
 				$is_field = true;
 				break;
 			}
@@ -395,7 +403,7 @@ foreach ($this->getForeignKeysFromTable($table_name) as $r):
 ?>
 <?php $used_methods[] = 'set' . StringFormat::titleCase($from_column_clean); ?>
 	/**
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 	function set<?php echo StringFormat::titleCase($from_column_clean) ?>(<?php echo $to_class_name ?> $<?php echo $lc_to_class_name ?> = null) {
@@ -407,7 +415,7 @@ foreach ($this->getForeignKeysFromTable($table_name) as $r):
 ?>
 <?php $used_methods[] = "set$to_class_name" . 'RelatedBy' . StringFormat::titleCase($from_column); ?>
 	/**
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 	function set<?php echo $to_class_name ?>RelatedBy<?php echo StringFormat::titleCase($from_column) ?>(<?php echo $to_class_name ?> $<?php echo $lc_to_class_name ?> = null) {
@@ -517,7 +525,7 @@ if (!$fk_is_pk) {
 ?>
 <?php $used_methods[] = "set$to_class_name"; ?>
 	/**
-	 * @return <?php echo $class_name ?>
+	 * @return <?php echo $model_name ?>
 
 	 */
 	function set<?php echo $to_class_name ?>(<?php echo $to_class_name ?> $<?php echo $lc_to_class_name ?> = null) {
@@ -529,7 +537,7 @@ if (!$fk_is_pk) {
 	}
 ?>
 	/**
-	 * @return <?php echo $class_name ?>[]
+	 * @return <?php echo $model_name ?>[]
 	 */
 <?php $used_methods[] = "doSelectJoin$to_class_name" . 'RelatedBy' . StringFormat::titleCase($from_column); ?>
 	static function doSelectJoin<?php echo $to_class_name ?>RelatedBy<?php echo StringFormat::titleCase($from_column) ?>(Query $q = null, $join_type = Query::LEFT_JOIN) {
@@ -559,7 +567,7 @@ if (!$fk_is_pk) {
 
 <?php endforeach ?>
 	/**
-	 * @return <?php echo $class_name ?>[]
+	 * @return <?php echo $model_name ?>[]
 	 */
 <?php $used_methods[] = 'doSelectJoinAll'; ?>
 	static function doSelectJoinAll(Query $q = null, $join_type = Query::LEFT_JOIN) {
@@ -714,10 +722,10 @@ foreach ($this->getForeignKeysToTable($table_name) as $r):
 		if (!in_array('get' . StringFormat::titleCase($from_class_name) . 's', $used_methods)) {
 ?>
 	/**
-	 * Convenience function for <?php echo $class_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
+	 * Convenience function for <?php echo $model_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
 
 	 * @return <?php echo $from_class_name ?>[]
-	 * @see <?php echo $class_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo StringFormat::titleCase($from_column) ?>
+	 * @see <?php echo $model_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo StringFormat::titleCase($from_column) ?>
 
 	 */
 <?php $used_methods[] = 'get' . StringFormat::titleCase($from_class_name) . 's'; ?>
@@ -731,9 +739,9 @@ foreach ($this->getForeignKeysToTable($table_name) as $r):
 		if (!in_array('get' . StringFormat::titleCase($from_class_name) . 'sQuery', $used_methods)) {
 ?>
 	/**
-	  * Convenience function for <?php echo $class_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>Query
+	  * Convenience function for <?php echo $model_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>Query
 	  * @return Query
-	  * @see <?php echo $class_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>Query
+	  * @see <?php echo $model_name ?>::get<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>Query
 	  */
 <?php $used_methods[] = 'get' . StringFormat::titleCase($from_class_name) . 'sQuery'; ?>
 	function get<?php echo StringFormat::titleCase($from_class_name) ?>sQuery(Query $q = null) {
@@ -746,10 +754,10 @@ foreach ($this->getForeignKeysToTable($table_name) as $r):
 		if (!in_array('delete' . StringFormat::titleCase($from_class_name) . 's', $used_methods)) {
 ?>
 	/**
-	  * Convenience function for <?php echo $class_name ?>::delete<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
+	  * Convenience function for <?php echo $model_name ?>::delete<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
 
 	  * @return int
-	  * @see <?php echo $class_name ?>::delete<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
+	  * @see <?php echo $model_name ?>::delete<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
 
 	  */
 <?php $used_methods[] = 'delete' . StringFormat::titleCase($from_class_name) . 's'; ?>
@@ -763,10 +771,10 @@ foreach ($this->getForeignKeysToTable($table_name) as $r):
 		if (!in_array('count' . StringFormat::titleCase($from_class_name) . 's', $used_methods)) {
 ?>
 	/**
-	  * Convenience function for <?php echo $class_name ?>::count<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
+	  * Convenience function for <?php echo $model_name ?>::count<?php echo $from_class_name ?>sRelatedBy<?php echo $from_column ?>
 
 	  * @return int
-	  * @see <?php echo $class_name ?>::count<?php echo $from_class_name ?>sRelatedBy<?php echo StringFormat::titleCase($from_column) ?>
+	  * @see <?php echo $model_name ?>::count<?php echo $from_class_name ?>sRelatedBy<?php echo StringFormat::titleCase($from_column) ?>
 
 	  */
 <?php $used_methods[] = 'count' . StringFormat::titleCase($from_class_name) . 's'; ?>
@@ -785,17 +793,17 @@ foreach ($this->getForeignKeysToTable($table_name) as $r):
 	function validate() {
 		$this->_validationErrors = array();
 <?php
-	foreach ($fields as $key => $field){
+	foreach ($columns as $key => &$column){
 		if (
-			$field->isNotNull()
-			&& !$field->isAutoIncrement()
-			&& !$field->getDefaultValue()
-			&& !$field->isPrimaryKey()
-			&& !in_array(strtolower($field->getName()), array('created', 'updated'))
+			$column->isNotNull()
+			&& !$column->isAutoIncrement()
+			&& !$column->getDefaultValue()
+			&& !$column->isPrimaryKey()
+			&& !in_array(strtolower($column->getName()), array('created', 'updated'))
 		) {
 ?>
-		if (null === $this->get<?php echo $field->getName() ?>()) {
-			$this->_validationErrors[] = '<?php echo $field->getName()?> must not be null';
+		if (null === $this->get<?php echo $column->getName() ?>()) {
+			$this->_validationErrors[] = '<?php echo $column->getName()?> must not be null';
 		}
 <?php
 		}

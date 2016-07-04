@@ -1,3 +1,8 @@
+<?php
+
+use Dabl\Generator\StringFormat;
+
+?>
 <h1><?php echo '<?php echo $'.$single.'->isNew() ? "New" : "Edit" ?>' ?> <?php echo StringFormat::titleCase($table_name, ' ') ?></h1>
 <form method="post" action="<?php echo "<?php echo site_url('".$plural_url."/save') ?>" ?>">
 	<div class="ui-widget-content ui-corner-all ui-helper-clearfix">

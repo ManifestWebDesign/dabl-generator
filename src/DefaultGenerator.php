@@ -66,6 +66,8 @@ class DefaultGenerator extends BaseGenerator {
 		}
 
 		$fkeys_to = $this->getForeignKeysToTable($table_name);
+		$used_to = array();
+
 		foreach ($fkeys_to as $k => &$r) {
 			$from_table = $r->getTableName();
 			$local_columns = $r->getLocalColumns();

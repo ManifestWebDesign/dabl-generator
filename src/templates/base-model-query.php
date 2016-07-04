@@ -1,6 +1,8 @@
 <?php echo '<?php' ?>
 
 
+use Dabl\Query\Query;
+
 abstract class base<?php echo $model_name ?>Query extends Query {
 
 	function __construct($table_name = null, $alias = null) {
