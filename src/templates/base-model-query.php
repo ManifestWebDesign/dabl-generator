@@ -1,4 +1,9 @@
-<?php echo '<?php' ?>
+<?php
+
+use Dabl\StringFormat\StringFormat;
+
+echo '<?php'
+?>
 
 
 use Dabl\Query\Query;

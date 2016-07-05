@@ -1,6 +1,6 @@
 <?php
 
-use Dabl\Generator\StringFormat;
+use Dabl\StringFormat\StringFormat;
 
 ?>
 <h1>

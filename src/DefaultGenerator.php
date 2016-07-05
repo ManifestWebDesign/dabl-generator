@@ -9,6 +9,8 @@
 
 namespace Dabl\Generator;
 
+use Dabl\StringFormat\StringFormat;
+
 class DefaultGenerator extends BaseGenerator {
 
 	/**

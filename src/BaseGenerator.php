@@ -11,6 +11,7 @@ namespace Dabl\Generator;
 
 use Dabl\Adapter\Propel\Model\Database;
 use Dabl\Query\DBManager;
+use Dabl\StringFormat\StringFormat;
 use DOMDocument;
 use RuntimeException;
 
