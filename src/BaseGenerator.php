@@ -59,22 +59,22 @@ abstract class BaseGenerator {
 	/**
 	 * @var string
 	 */
-	protected $baseModelTemplate = '/templates/base-model.php';
+	protected $baseModelTemplate = __DIR__ . '/templates/base-model.php';
 
 	/**
 	 * @var string
 	 */
-	protected $baseModelQueryTemplate = '/templates/base-model-query.php';
+	protected $baseModelQueryTemplate = __DIR__ . '/templates/base-model-query.php';
 
 	/**
 	 * @var string
 	 */
-	protected $modelTemplate = '/templates/model.php';
+	protected $modelTemplate = __DIR__ . '/templates/model.php';
 
 	/**
 	 * @var string
 	 */
-	protected $modelQueryTemplate = '/templates/model-query.php';
+	protected $modelQueryTemplate = __DIR__ . '/templates/model-query.php';
 
 	/**
 	 * Constructor function
@@ -250,7 +250,7 @@ abstract class BaseGenerator {
 			$$key = $value;
 
 		ob_start();
-		require dirname(__FILE__) . $template;
+		require $template;
 		return ob_get_clean();
 	}
 

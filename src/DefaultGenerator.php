@@ -33,16 +33,16 @@ class DefaultGenerator extends BaseGenerator {
 	 * @var array
 	 */
 	protected $viewTemplates = array(
-		'edit.php' => '/templates/edit.php',
-		'index.php' => '/templates/index.php',
-		'grid.php' => '/templates/grid.php',
-		'show.php' => '/templates/show.php'
+		'edit.php' => __DIR__ . '/templates/edit.php',
+		'index.php' => __DIR__ . '/templates/index.php',
+		'grid.php' => __DIR__ . '/templates/grid.php',
+		'show.php' => __DIR__ . '/templates/show.php'
 	);
 
 	/**
 	 * @var string
 	 */
-	protected $controllerTemplate = '/templates/controller.php';
+	protected $controllerTemplate = __DIR__ . '/templates/controller.php';
 
 	function getActions($table_name) {
 		$single = StringFormat::variable($table_name);
