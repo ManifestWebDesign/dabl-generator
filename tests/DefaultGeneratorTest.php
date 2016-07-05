@@ -86,8 +86,7 @@ class DefaultGeneratorTest extends PHPUnit_Framework_TestCase {
 
 		$this->generator->generateModels(
 			['user', 'post'],
-			__DIR__ . '/output/models',
-			__DIR__ . '/output/models/base'
+			__DIR__ . '/output/models'
 		);
 
 	}

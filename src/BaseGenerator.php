@@ -441,7 +441,7 @@ abstract class BaseGenerator {
 	 * @param string $model_dir
 	 * @param string $base_model_dir
 	 */
-	function generateModels($table_names, $model_dir, $base_model_dir) {
+	function generateModels($table_names, $model_dir, $base_model_dir = null) {
 		if ($table_names === null) {
 			$table_names = $this->getTableNames();
 		}
@@ -451,6 +451,10 @@ abstract class BaseGenerator {
 		}
 
 		$model_dir = $this->normalizeAndCheckPath($model_dir);
+
+		if (empty($base_model_dir)) {
+			$base_model_dir = $model_dir . '/base/';
+		}
 		$base_model_dir = $this->normalizeAndCheckPath($base_model_dir);
 
 		// Write PHP classes for each table
