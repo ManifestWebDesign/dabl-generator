@@ -78,8 +78,7 @@ abstract class BaseGenerator {
 
 	/**
 	 * Constructor function
-	 * @param $db_name string
-	 * @param $schema DOMDocument
+	 * @param $connection_name string
 	 */
 	function __construct($connection_name) {
 		$this->setConnectionName($connection_name);
@@ -127,6 +126,7 @@ abstract class BaseGenerator {
 
 	/**
 	 * Returns an array of Column objects for a given table in the XML schema
+	 * @param string $table_name
 	 * @return array Column[]
 	 */
 	function getColumns($table_name) {
@@ -138,7 +138,7 @@ abstract class BaseGenerator {
 	}
 
 	/**
-	 * @param type $table_name
+	 * @param string $table_name
 	 * @return array Column[]
 	 */
 	function getPrimaryKeys($table_name) {
@@ -240,7 +240,9 @@ abstract class BaseGenerator {
 	}
 
 	/**
+	 * @param string $table_name
 	 * @param string $template Path to file relative to dirname(__FILE__) with leading /
+	 * @param array $extra_params
 	 * @return string
 	 */
 	function renderTemplate($table_name, $template, $extra_params = array()) {
@@ -336,7 +338,6 @@ abstract class BaseGenerator {
 	 * Generates a string with the contents of the stub class
 	 * for the table, which is used for extending the Base class.
 	 * @param string $table_name
-	 * @param string $class_name
 	 * @return string
 	 */
 	function getModel($table_name) {
@@ -377,7 +378,9 @@ abstract class BaseGenerator {
 
 	/**
 	 * Generates Table classes
-	 * @return void
+	 * @param array $table_names
+	 * @param string $model_query_dir
+	 * @param string $base_model_query_dir
 	 */
 	function generateModelQueries($table_names, $model_query_dir, $base_model_query_dir) {
 		if ($table_names === null) {
@@ -412,6 +415,10 @@ abstract class BaseGenerator {
 		}
 	}
 
+	/**
+	 * @param string $path
+	 * @return mixed|string
+	 */
 	function normalizeAndCheckPath($path) {
 		if (empty($path)) {
 			throw new RuntimeException('Path cannot be empty');
@@ -474,6 +481,8 @@ abstract class BaseGenerator {
 
 	/**
 	 * Generate views
+	 * @param array $table_names
+	 * @param string $view_directory
 	 */
 	function generateViews($table_names, $view_directory) {
 		if ($table_names === null) {
@@ -505,6 +514,8 @@ abstract class BaseGenerator {
 
 	/**
 	 * Generate controllers
+	 * @param array $table_names
+	 * @param string $controller_directory
 	 */
 	function generateControllers($table_names, $controller_directory) {
 		if ($table_names === null) {
