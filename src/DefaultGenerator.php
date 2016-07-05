@@ -32,17 +32,24 @@ class DefaultGenerator extends BaseGenerator {
 	/**
 	 * @var array
 	 */
-	protected $viewTemplates = array(
-		'edit.php' => __DIR__ . '/templates/edit.php',
-		'index.php' => __DIR__ . '/templates/index.php',
-		'grid.php' => __DIR__ . '/templates/grid.php',
-		'show.php' => __DIR__ . '/templates/show.php'
-	);
+	protected $viewTemplates = array();
 
 	/**
 	 * @var string
 	 */
-	protected $controllerTemplate = __DIR__ . '/templates/controller.php';
+	protected $controllerTemplate;
+
+	function __construct($connection_name) {
+		$this->controllerTemplate = __DIR__ . '/templates/controller.php';
+		$this->viewTemplates = array(
+			'edit.php' => __DIR__ . '/templates/edit.php',
+			'index.php' => __DIR__ . '/templates/index.php',
+			'grid.php' => __DIR__ . '/templates/grid.php',
+			'show.php' => __DIR__ . '/templates/show.php'
+		);
+
+		parent::__construct($connection_name);
+	}
 
 	function getActions($table_name) {
 		$single = StringFormat::variable($table_name);

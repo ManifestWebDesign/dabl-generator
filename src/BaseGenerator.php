@@ -59,28 +59,33 @@ abstract class BaseGenerator {
 	/**
 	 * @var string
 	 */
-	protected $baseModelTemplate = __DIR__ . '/templates/base-model.php';
+	protected $baseModelTemplate;
 
 	/**
 	 * @var string
 	 */
-	protected $baseModelQueryTemplate = __DIR__ . '/templates/base-model-query.php';
+	protected $baseModelQueryTemplate;
 
 	/**
 	 * @var string
 	 */
-	protected $modelTemplate = __DIR__ . '/templates/model.php';
+	protected $modelTemplate;
 
 	/**
 	 * @var string
 	 */
-	protected $modelQueryTemplate = __DIR__ . '/templates/model-query.php';
+	protected $modelQueryTemplate;
 
 	/**
 	 * Constructor function
 	 * @param $connection_name string
 	 */
 	function __construct($connection_name) {
+		$this->baseModelTemplate = __DIR__ . '/templates/base-model.php';
+		$this->baseModelQueryTemplate = __DIR__ . '/templates/base-model-query.php';
+		$this->modelTemplate = __DIR__ . '/templates/model.php';
+		$this->modelQueryTemplate = __DIR__ . '/templates/model-query.php';
+
 		$this->setConnectionName($connection_name);
 		$conn = DBManager::getConnection($connection_name);
 		$this->database = $conn->getDatabaseSchema();
