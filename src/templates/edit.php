@@ -1,6 +1,7 @@
 <?php
 
 use Dabl\Generator\StringFormat;
+use Dabl\Orm\Model;
 
 ?>
 <h1><?php echo '<?php echo $'.$single.'->isNew() ? "New" : "Edit" ?>' ?> <?php echo StringFormat::titleCase($table_name, ' ') ?></h1>

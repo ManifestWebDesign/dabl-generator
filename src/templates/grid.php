@@ -1,6 +1,7 @@
 <?php
 
 use Dabl\Generator\StringFormat;
+use Dabl\Orm\Model;
 
 echo '<?php';
 ?>

@@ -131,6 +131,9 @@ abstract class BaseGenerator {
 	 */
 	function getColumns($table_name) {
 		$table = $this->database->getTable($table_name);
+		if (empty($table)) {
+			throw new RuntimeException("Unable to get structure for table '$table_name'");
+		}
 		return $table->getColumns();
 	}
 
@@ -140,6 +143,9 @@ abstract class BaseGenerator {
 	 */
 	function getPrimaryKeys($table_name) {
 		$table = $this->database->getTable($table_name);
+		if (empty($table)) {
+			throw new RuntimeException("Unable to get structure for table '$table_name'");
+		}
 		return $table->getPrimaryKey();
 	}
 
@@ -148,7 +154,11 @@ abstract class BaseGenerator {
 	 * @return array
 	 */
 	function getForeignKeysFromTable($table_name) {
-		return $this->database->getTable($table_name)->getForeignKeys();
+		$table = $this->database->getTable($table_name);
+		if (empty($table)) {
+			throw new RuntimeException("Unable to get structure for table '$table_name'");
+		}
+		return $table->getForeignKeys();
 	}
 
 	/**
@@ -156,7 +166,11 @@ abstract class BaseGenerator {
 	 * @return array
 	 */
 	function getForeignKeysToTable($table_name) {
-		return $this->database->getTable($table_name)->getReferrers();
+		$table = $this->database->getTable($table_name);
+		if (empty($table)) {
+			throw new RuntimeException("Unable to get structure for table '$table_name'");
+		}
+		return $table->getReferrers();
 	}
 
 	/**

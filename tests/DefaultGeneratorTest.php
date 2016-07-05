@@ -17,6 +17,12 @@ class DefaultGeneratorTest extends PHPUnit_Framework_TestCase {
 	protected $generator;
 
 	function setUp() {
+		$this->generator = new DefaultGenerator('test');
+
+		return parent::setUp();
+	}
+
+	static function setUpBeforeClass() {
 		DBManager::addConnection('test', array(
 			'driver' => 'sqlite',
 			'dbname' => ':memory:'
@@ -26,29 +32,82 @@ class DefaultGeneratorTest extends PHPUnit_Framework_TestCase {
 		 * @var \Dabl\Adapter\DABLPDO
 		 */
 		$conn = DBManager::getConnection('test');
-		$conn->exec('CREATE TABLE my_table (
+		$conn->exec('CREATE TABLE user (
 			id INTEGER,
 			name,
-			date,
 			PRIMARY KEY(id ASC)
 		)');
 
-		$this->generator = new DefaultGenerator('test');
-		return parent::setUp();
+		$conn->exec('CREATE TABLE post (
+			id INTEGER,
+			user_id INTEGER,
+			content,
+			PRIMARY KEY(id ASC),
+			FOREIGN KEY(user_id) REFERENCES user(id)
+		)');
+
+		self::deleteFiles();
+
+		foreach (['output/views', 'output/controllers', 'output/models/base'] as $dir) {
+			if (!is_dir(__DIR__ . '/' . $dir)) {
+				mkdir(__DIR__ . '/' . $dir, 0755, true);
+			}
+		}
+
+		return parent::setUpBeforeClass();
 	}
 
-	function tearDown() {
+	static function deleteFiles() {
+		foreach (glob(__DIR__ . '/output/*/*/*.php') as $file) {
+			unlink($file);
+		}
+		foreach (glob(__DIR__ . '/output/*/*.php') as $file) {
+			unlink($file);
+		}
+		foreach (glob(__DIR__ . '/output/*/*.sql') as $file) {
+			unlink($file);
+		}
+		foreach (['models/base', 'models', 'views/users', 'views/posts', 'views', 'controllers', ''] as $dir) {
+			if (is_dir(__DIR__ . '/output/' . $dir)) {
+				rmdir(__DIR__ . '/output/' . $dir);
+			}
+		}
+	}
+
+	static function tearDownAfterClass() {
 		DBManager::disconnect('test');
 
-		return parent::tearDown();
+		self::deleteFiles();
+
+		return parent::tearDownAfterClass();
 	}
 
 	function testGenerateModels() {
+
 		$this->generator->generateModels(
-			array('my_table'),
-			__DIR__ . '/output',
-			__DIR__ . '/output/base'
+			['user', 'post'],
+			__DIR__ . '/output/models',
+			__DIR__ . '/output/models/base'
 		);
+
+	}
+
+	function testGenerateViews() {
+
+		$this->generator->generateViews(
+			['user', 'post'],
+			__DIR__ . '/output/views'
+		);
+
+	}
+
+	function testGenerateControllers() {
+
+		$this->generator->generateControllers(
+			['user', 'post'],
+			__DIR__ . '/output/controllers'
+		);
+
 	}
 
 }

@@ -1,4 +1,6 @@
-<?php echo "<?php\n"; ?>
+<?php use Dabl\Generator\StringFormat;
+
+echo "<?php\n"; ?>
 
 use Dabl\Query\QueryPager;
 
