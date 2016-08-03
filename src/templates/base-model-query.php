@@ -38,9 +38,7 @@ abstract class base<?php echo $model_name ?>Query extends Query {
 
 	 */
 	function selectOne() {
-		$this->setLimit(1);
-		$records = <?php echo $model_name ?>::doSelect($this);
-		return reset($records);
+		return <?php echo $model_name ?>::doSelectOne($this);
 	}
 
 	/**
