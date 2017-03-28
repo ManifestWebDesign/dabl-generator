@@ -125,8 +125,10 @@ abstract class BaseGenerator {
 	 */
 	function getTableNames() {
 		$table_names = array();
-		foreach ($this->database->getTables() as $table)
+		foreach ($this->database->getTables() as $table) {
 			$table_names[] = $table->getName();
+		}
+		sort($table_names);
 		return $table_names;
 	}
 
