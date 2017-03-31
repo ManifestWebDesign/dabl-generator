@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ManifestWebDesign/dabl-generator.svg?branch=master)](https://travis-ci.org/ManifestWebDesign/dabl-generator)
+
 # dabl-generator
 Simple MVC code generator
 
