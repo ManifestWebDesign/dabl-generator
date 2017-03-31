@@ -91,42 +91,16 @@ abstract class base<?php echo $model_name ?> extends <?php echo $options['base_m
 	);
 
 	/**
-	 * string name of the primary key column
-	 * @var string
-	 */
-	protected static $_primaryKey = '<?php echo $pk ?>';
-
-	/**
 	 * true if primary key is an auto-increment column
 	 * @var bool
 	 */
 	protected static $_isAutoIncrement = <?php echo $auto_increment ? 'true' : 'false' ?>;
 
 	/**
-	 * array of all fully-qualified(table.column) columns
-	 * @var string[]
-	 */
-	protected static $_columns = array(
-<?php foreach ($columns as $key => &$column): ?>
-		<?php echo $model_name ?>::<?php echo StringFormat::constant($column->getName()) ?>,
-<?php endforeach ?>
-	);
-
-	/**
-	 * array of all column names
-	 * @var string[]
-	 */
-	protected static $_columnNames = array(
-<?php foreach ($columns as $key => &$column): ?>
-		'<?php echo $column->getName() ?>',
-<?php endforeach ?>
-	);
-
-	/**
 	 * array of all column types
 	 * @var string[]
 	 */
-	protected static $_columnTypes = array(
+	protected static $_columns = array(
 <?php foreach ($columns as $key => &$column): ?>
 		'<?php echo $column->getName() ?>' => Model::COLUMN_TYPE_<?php echo $column->getType() ?>,
 <?php endforeach ?>
