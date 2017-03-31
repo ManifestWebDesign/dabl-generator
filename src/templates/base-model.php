@@ -229,7 +229,7 @@ foreach ($columns as $key => &$column):
 
 	 */
 <?php $used_methods[] = 'retrieveByPK'; ?>
-	 static function retrieveByPK(<?php if ($primary_keys && count($primary_keys) == 1): ?>$<?php echo StringFormat::variable($primary_keys[0]) ?><?php else: ?>$the_pk<?php endif ?>) {
+	static function retrieveByPK(<?php if ($primary_keys && count($primary_keys) == 1): ?>$<?php echo StringFormat::variable($primary_keys[0]) ?><?php else: ?>$the_pk<?php endif ?>) {
 <?php if (count($primary_keys) > 1): ?>
 		throw new Exception('This table has more than one primary key.  Use retrieveByPKs() instead.');
 <?php else: ?>
