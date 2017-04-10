@@ -38,6 +38,7 @@ echo '<?php';
 use Dabl\Orm\Model;
 use Dabl\Query\DBManager;
 use Dabl\Query\Query;
+use Dabl\Adapter\DABLPDO;
 
 /**
  *		Created by Dan Blaisdell's DABL
