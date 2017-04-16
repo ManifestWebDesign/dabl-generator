@@ -10,10 +10,10 @@
 		}
 	],
 	"require": {
-		"dabl/adapter": "1.1.*",
-		"dabl/query": "1.1.*",
-		"dabl/orm": "1.2.*",
-		"dabl/stringformat": "1.1.*"
+		"dabl/adapter": "^1.1.0",
+		"dabl/query": "^1.1.0",
+		"dabl/orm": "^1.2.0",
+		"dabl/stringformat": "^1.1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "4.8.*"
